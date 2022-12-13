@@ -28,7 +28,8 @@ namespace PupilLabs.Demos
         public float prevThetaR = 0;
         public float prevPhiR = 0;
 
-        double prevTime = 0;
+        double prevTimeL = 0;
+        double prevTimeR = 0;
 
         //on enable resgiter new listener if none is registered. enable listener
         void OnEnable()
@@ -60,20 +61,27 @@ namespace PupilLabs.Demos
                 phiL = Mathf.Rad2Deg * pupilData.Circle.Phi;
                 pupilDiameterL = pupilData.Diameter3d;
 
-                EyeLStatus.text = "Theta L = " + ((thetaL - prevThetaL) / (time - prevTime)).ToString() + "\tPhi L = " + ((phiL - prevPhiL) / (time - prevTime)).ToString() + "\tPupil L = " + pupilDiameterL.ToString();
+                //EyeLStatus.text = "Theta L = " + ((thetaL - prevThetaL) / (time - prevTime)).ToString() + "\tPhi L = " + ((phiL - prevPhiL) / (time - prevTime)).ToString() + "\tPupil L = " + pupilDiameterL.ToString();
+                EyeLStatus.text = "Theta L = " + Mathf.Round((float)((thetaL - prevThetaL) / (time - prevTimeL))).ToString() + "\tPhi L = " + Mathf.Round((float)((phiL - prevPhiL) / (time - prevTimeL))).ToString() + "\tPupil L = " + (Mathf.Round(pupilDiameterL * 10) / 10).ToString();
 
-                prevTime = time;
+
+                prevTimeL = time;
                 prevThetaL = thetaL;
                 prevPhiL = phiL;
             }
 
             if (pupilData.EyeIdx == 0 && !(pupilData.Circle.Theta == 0 || pupilData.Circle.Phi == 0 || pupilData.Diameter3d == 0))
             {
+                double time = timeSync.ConvertToUnityTime(pupilData.PupilTimestamp);
                 thetaR = Mathf.Rad2Deg * pupilData.Circle.Theta;
                 phiR = Mathf.Rad2Deg * pupilData.Circle.Phi;
                 pupilDiameterR = pupilData.Diameter3d;
 
-                //EyeRStatus.text = "Theta = " + thetaR + "\nPhi = " + phiR + "\nDiameter = " + pupilDiameterR + "\nTime Stamp = " + timestamp;
+                EyeRStatus.text = "Theta R = " + Mathf.Round((float) ((thetaR - prevThetaR) / (time - prevTimeR))).ToString() + "\tPhi R = " + Mathf.Round((float) ((phiR - prevPhiR) / (time - prevTimeR))).ToString() + "\tPupil R = " + (Mathf.Round(pupilDiameterR * 10) / 10).ToString();
+
+                prevTimeR = time;
+                prevThetaR = thetaR;
+                prevPhiR = phiR;
             }
         }
     }
