@@ -19,8 +19,8 @@ public class InputGenerator : MonoBehaviour
         val = prevVal + Random.Range(-2, 3);
         val2 = prevVal2 + Random.Range(-2, 3);
 
-        displayVal.text = "val = " + val.ToString();
-        displayVal2.text = "val 2 = " + val2.ToString();
+        //displayVal.text = "val = " + val.ToString();
+        //displayVal2.text = "val 2 = " + val2.ToString();
 
         prevVal = val;
         prevVal2 = val2;

@@ -53,7 +53,7 @@ public class WindowGraph : MonoBehaviour
             int max = Mathf.Max(MaxYValue(valueList), MaxYValue(valueList2));
             int min = Mathf.Min(MinYValue(valueList), MinYValue(valueList2));
 
-            if (iteration % 10 == 0)
+            if (iteration % 50 == 0)
             {
                 ClearAll();
 
@@ -62,7 +62,7 @@ public class WindowGraph : MonoBehaviour
 
                 CreateLabelY((float)max, (float)min);
                 CreateLabelX(valueList.Count, numDisplayedValues);
-        }
+            }
 
             if ((numDisplayedValues > 0) && (valueList.Count >= numDisplayedValues))
             {
@@ -70,10 +70,12 @@ public class WindowGraph : MonoBehaviour
                 {
                     valueList.RemoveAt(0);
                     valueList2.RemoveAt(0);
+                    time.RemoveAt(0);
                 }
             }
 
             iteration++;
+            //print(valueList.Count.ToString() + "\t" + valueList2.Count.ToString() + "\t" + time.Count.ToString());
 
         }, 0.1f);
     }
@@ -94,8 +96,9 @@ public class WindowGraph : MonoBehaviour
     private int MaxYValue(List<int> valueList)
     {
         int maxValue = valueList[0];
-        foreach (int value in valueList) {
-            if(value > maxValue)
+        foreach (int value in valueList)
+        {
+            if (value > maxValue)
             {
                 maxValue = value;
             }
@@ -139,9 +142,10 @@ public class WindowGraph : MonoBehaviour
         float graphWidth = graphContainer.sizeDelta.x;
         float xSize = graphWidth / maxVisibleNumValues; ;
         int xIndex = 0;
-        int labelXSpacing = 2 * ((int)(Mathf.Log10(listLength) / Mathf.Log10(2)) + 1);
+        int labelXSpacing = 10 * ((int)(Mathf.Log10(listLength) / Mathf.Log10(2)) + 1);
 
-        for (int i = Mathf.Max(listLength - maxVisibleNumValues, 0); i < listLength; i++)
+        //for (int i = Mathf.Max(listLength - maxVisibleNumValues, 0); i < listLength; i++)
+        for (int i = 0; i < time.Count; i++)
         {
             float xPosition = xIndex * xSize;
             if (xIndex % labelXSpacing == 0)
@@ -232,10 +236,10 @@ public class WindowGraph : MonoBehaviour
             float xPosition = xIndex * xSize;
             float yPosition = ((valueList[i] - yMin) / (yMax - yMin)) * graphHeight;
 
-            GameObject dot =  CreateDot(new Vector2(xPosition, yPosition));
+            GameObject dot = CreateDot(new Vector2(xPosition, yPosition));
             gameObjectList.Add(dot);
 
-            if(prevDot != null)
+            if (prevDot != null)
             {
                 GameObject dotConnectionObject = CreateDotConnection(prevDot.GetComponent<RectTransform>().anchoredPosition, dot.GetComponent<RectTransform>().anchoredPosition, color);
                 gameObjectList.Add(dotConnectionObject);
