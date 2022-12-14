@@ -12,7 +12,7 @@ namespace PupilLabs.Demos
         public Text EyeLStatus;
         public Text EyeRStatus;
 
-        private PupilListener listener;
+        public PupilListener listener;
 
         public float thetaL;
         public float phiL;
