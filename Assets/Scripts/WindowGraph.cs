@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using CodeMonkey.Utils;
+using PupilLabs.Demos;
 
 public class WindowGraph : MonoBehaviour
 {
@@ -9,7 +10,16 @@ public class WindowGraph : MonoBehaviour
 
     private Sprite dotSprite;
 
-    public InputGenerator valueGenerator;
+    //public InputGenerator valueGenerator;
+    public PupilDataDemo pupilSubscriber;
+
+    public Toggle thetaLStatus;
+    public Toggle phiLStatus;
+    public Toggle pupilLStatus;
+
+    public Toggle thetaRStatus;
+    public Toggle phiRStatus;
+    public Toggle pupilRStatus;
 
     private RectTransform graphContainer;
 
@@ -24,6 +34,61 @@ public class WindowGraph : MonoBehaviour
 
     public int numDisplayedValues = -1;
 
+    int iteration = 0;
+
+    //private void Awake()
+    //{
+    //    graphContainer = transform.Find("GraphContainer").GetComponent<RectTransform>();
+    //    time = new List<float> { Time.time };
+
+    //    labelTemplateX = graphContainer.Find("LabelTemplateX").GetComponent<RectTransform>();
+    //    labelTemplateY = graphContainer.Find("LabelTemplateY").GetComponent<RectTransform>();
+    //    dashTemplateX = graphContainer.Find("DashTemplateX").GetComponent<RectTransform>();
+    //    dashTemplateY = graphContainer.Find("DashTemplateY").GetComponent<RectTransform>();
+
+    //    gameObjectList = new List<GameObject>();
+
+    //    List<int> valueList = new List<int> { 0 };
+    //    List<int> valueList2 = new List<int> { 0 };
+
+    //    FunctionPeriodic.Create(() =>
+    //    {
+    //        InputGenerator values = valueGenerator.GetComponent<InputGenerator>();
+
+    //        valueList.Add(values.val);
+    //        valueList2.Add(values.val2);
+
+    //        time.Add(Time.time);
+
+    //        int max = Mathf.Max(MaxYValue(valueList), MaxYValue(valueList2));
+    //        int min = Mathf.Min(MinYValue(valueList), MinYValue(valueList2));
+
+    //        if (iteration % 50 == 0)
+    //        {
+    //            ClearAll();
+
+    //            ShowGraph(valueList, Color.green, (float)max, (float)min, numDisplayedValues);
+    //            ShowGraph(valueList2, Color.red, (float)max, (float)min, numDisplayedValues);
+
+    //            CreateLabelY((float)max, (float)min);
+    //            CreateLabelX(valueList.Count, numDisplayedValues);
+    //        }
+
+    //        if ((numDisplayedValues > 0) && (valueList.Count >= numDisplayedValues))
+    //        {
+    //            for (int i = 0; i < valueList.Count - numDisplayedValues; i++)
+    //            {
+    //                valueList.RemoveAt(0);
+    //                valueList2.RemoveAt(0);
+    //                time.RemoveAt(0);
+    //            }
+    //        }
+
+    //        iteration++;
+
+    //    }, 0.1f);
+    //}
+
     private void Awake()
     {
         graphContainer = transform.Find("GraphContainer").GetComponent<RectTransform>();
@@ -36,46 +101,65 @@ public class WindowGraph : MonoBehaviour
 
         gameObjectList = new List<GameObject>();
 
-        List<int> valueList = new List<int> { 0 };
-        List<int> valueList2 = new List<int> { 0 };
+        List<float> valueListThetaL = new List<float> { };
+        List<float> valueListPhiL = new List<float> { };
+        List<float> valueListPupilL = new List<float> { };
 
-        int iteration = 0;
+        List<float> valueListThetaR = new List<float> { };
+        List<float> valueListPhiR = new List<float> { };
+        List<float> valueListPupilR = new List<float> { };
+
+        thetaLStatus = GetComponent<Toggle>();
+        phiLStatus = GetComponent<Toggle>();
+        pupilLStatus = GetComponent<Toggle>();
+
+        thetaRStatus = GetComponent<Toggle>();
+        phiRStatus = GetComponent<Toggle>();
+        pupilRStatus = GetComponent<Toggle>();
 
         FunctionPeriodic.Create(() =>
         {
-            InputGenerator values = valueGenerator.GetComponent<InputGenerator>();
+            List<bool> activationList = new List<bool> {thetaLStatus.isOn, phiLStatus.isOn, pupilLStatus.isOn, thetaRStatus.isOn, phiRStatus.isOn, pupilRStatus.isOn};
 
-            valueList.Add(values.val);
-            valueList2.Add(values.val2);
+            PupilDataDemo values = pupilSubscriber.GetComponent<PupilDataDemo>();
+
+            valueListThetaL.Add(values.thetaL);
+            valueListPhiL.Add(values.phiL);
+            valueListPupilL.Add(values.pupilDiameterL);
+
+            //valueList.Add(values.val);
+            //valueList2.Add(values.val2);
 
             time.Add(Time.time);
 
-            int max = Mathf.Max(MaxYValue(valueList), MaxYValue(valueList2));
-            int min = Mathf.Min(MinYValue(valueList), MinYValue(valueList2));
+            //float max = Mathf.Max(MaxYValue(valueListThetaL), MaxYValue(valueListPhiL), MaxYValue(valueListPupilL));
+            //float min = Mathf.Min(MinYValue(valueListThetaL), MinYValue(valueListPhiL), MinYValue(valueListPupilL));
+            //make list of individual maxima and minima -> iterate over list to find max/min of all used components
+            float max = MaxYValue(valueListPhiL);
+            float min = MinYValue(valueListPhiL);
 
-            if (iteration % 50 == 0)
+            if (iteration % 10 == 0)
             {
                 ClearAll();
 
-                ShowGraph(valueList, Color.green, (float)max, (float)min, numDisplayedValues);
-                ShowGraph(valueList2, Color.red, (float)max, (float)min, numDisplayedValues);
+                ShowGraph(valueListPhiL, Color.green, max, min, numDisplayedValues);
+                //ShowGraph(valueList2, Color.red, (float)max, (float)min, numDisplayedValues);
 
-                CreateLabelY((float)max, (float)min);
-                CreateLabelX(valueList.Count, numDisplayedValues);
+                CreateLabelY(max, min);
+                CreateLabelX(valueListThetaL.Count, numDisplayedValues);
             }
 
-            if ((numDisplayedValues > 0) && (valueList.Count >= numDisplayedValues))
+            if ((numDisplayedValues > 0) && (valueListThetaL.Count >= numDisplayedValues))
             {
-                for (int i = 0; i < valueList.Count - numDisplayedValues; i++)
+                for (int i = 0; i < valueListThetaL.Count - numDisplayedValues; i++)
                 {
-                    valueList.RemoveAt(0);
-                    valueList2.RemoveAt(0);
+                    valueListThetaL.RemoveAt(0);
+                    //valueList2.RemoveAt(0);
                     time.RemoveAt(0);
                 }
             }
 
             iteration++;
-            //print(valueList.Count.ToString() + "\t" + valueList2.Count.ToString() + "\t" + time.Count.ToString());
 
         }, 0.1f);
     }
@@ -93,9 +177,39 @@ public class WindowGraph : MonoBehaviour
         return gameObject;
     }
 
-    private int MaxYValue(List<int> valueList)
+    //private int MaxYValue(List<int> valueList)
+    //{
+    //    int maxValue = valueList[0];
+    //    foreach (int value in valueList)
+    //    {
+    //        if (value > maxValue)
+    //        {
+    //            maxValue = value;
+    //        }
+    //    }
+
+    //    return maxValue;
+    //}
+
+    //private int MinYValue(List<int> valueList)
+    //{
+    //    int minValue = valueList[0];
+    //    foreach (int value in valueList)
+    //    {
+    //        if (value < minValue)
+    //        {
+    //            minValue = value;
+    //        }
+    //    }
+
+    //    return minValue;
+    //}
+
+    
+    //add parameter activationList of type List<bool> to get max of all active relevant lists
+    private float MaxYValue(List<float> valueList)
     {
-        int maxValue = valueList[0];
+        float maxValue = valueList[0];
         foreach (int value in valueList)
         {
             if (value > maxValue)
@@ -107,9 +221,9 @@ public class WindowGraph : MonoBehaviour
         return maxValue;
     }
 
-    private int MinYValue(List<int> valueList)
+    private float MinYValue(List<float> valueList)
     {
-        int minValue = valueList[0];
+        float minValue = valueList[0];
         foreach (int value in valueList)
         {
             if (value < minValue)
@@ -205,7 +319,53 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
-    private void ShowGraph(List<int> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1)
+    //private void ShowGraph(List<int> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1)
+    //{
+    //    if (maxVisibleNumValues <= 0)
+    //    {
+    //        maxVisibleNumValues = valueList.Count;
+    //    }
+
+    //    float graphHeight = graphContainer.sizeDelta.y;
+    //    float graphWidth = graphContainer.sizeDelta.x;
+
+    //    float yDifference = yMax - yMin;
+
+    //    if (yDifference <= 0)
+    //    {
+    //        yDifference = 5.0f;
+    //    }
+
+    //    yMax = yMax + yDifference * 0.1f;
+    //    yMin = yMin - yDifference * 0.1f;
+
+    //    float xSize = graphWidth / maxVisibleNumValues;
+
+    //    int xIndex = 0;
+
+    //    GameObject prevDot = null;
+
+    //    for (int i = 0; i < valueList.Count; i++)
+    //    {
+    //        float xPosition = xIndex * xSize;
+    //        float yPosition = ((valueList[i] - yMin) / (yMax - yMin)) * graphHeight;
+
+    //        GameObject dot = CreateDot(new Vector2(xPosition, yPosition));
+    //        gameObjectList.Add(dot);
+
+    //        if (prevDot != null)
+    //        {
+    //            GameObject dotConnectionObject = CreateDotConnection(prevDot.GetComponent<RectTransform>().anchoredPosition, dot.GetComponent<RectTransform>().anchoredPosition, color);
+    //            gameObjectList.Add(dotConnectionObject);
+    //        }
+
+    //        prevDot = dot;
+
+    //        xIndex++;
+    //    }
+    //}
+
+    private void ShowGraph(List<float> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1)
     {
         if (maxVisibleNumValues <= 0)
         {
