@@ -31,6 +31,14 @@ namespace PupilLabs.Demos
         double prevTimeL = 0;
         double prevTimeR = 0;
 
+        public List<float> valueListThetaL = new List<float> { };
+        public List<float> valueListPhiL = new List<float> { };
+        public List<float> valueListPupilL = new List<float> { };
+
+        public List<float> valueListThetaR = new List<float> { };
+        public List<float> valueListPhiR = new List<float> { };
+        public List<float> valueListPupilR = new List<float> { };
+
         //on enable resgiter new listener if none is registered. enable listener
         void OnEnable()
         {
@@ -58,12 +66,18 @@ namespace PupilLabs.Demos
             {
                 double time = timeSync.ConvertToUnityTime(pupilData.PupilTimestamp);
                 thetaL = Mathf.Rad2Deg * pupilData.Circle.Theta;
+                //thetaL = Mathf.Round((float)((Mathf.Rad2Deg * pupilData.Circle.Theta - prevThetaL) / (time - prevTimeL)));
                 phiL = Mathf.Rad2Deg * pupilData.Circle.Phi;
+                //phiL = Mathf.Round((float)((Mathf.Rad2Deg * pupilData.Circle.Phi - prevPhiL) / (time - prevTimeL)));
                 pupilDiameterL = pupilData.Diameter3d;
+
+                valueListThetaL.Add(thetaL);
+                valueListPhiL.Add(phiL);
+                valueListPupilL.Add(pupilDiameterL);
 
                 //EyeLStatus.text = "Theta L = " + ((thetaL - prevThetaL) / (time - prevTime)).ToString() + "\tPhi L = " + ((phiL - prevPhiL) / (time - prevTime)).ToString() + "\tPupil L = " + pupilDiameterL.ToString();
                 EyeLStatus.text = "Theta L = " + Mathf.Round((float)((thetaL - prevThetaL) / (time - prevTimeL))).ToString() + "\tPhi L = " + Mathf.Round((float)((phiL - prevPhiL) / (time - prevTimeL))).ToString() + "\tPupil L = " + (Mathf.Round(pupilDiameterL * 10) / 10).ToString();
-
+                //EyeLStatus.text = "Theta L = " + thetaL.ToString() + "\tPhi L = " + Mathf.Round((float)((phiL - prevPhiL) / (time - prevTimeL))).ToString() + "\tPupil L = " + (Mathf.Round(pupilDiameterL * 10) / 10).ToString();
 
                 prevTimeL = time;
                 prevThetaL = thetaL;
@@ -76,6 +90,10 @@ namespace PupilLabs.Demos
                 thetaR = Mathf.Rad2Deg * pupilData.Circle.Theta;
                 phiR = Mathf.Rad2Deg * pupilData.Circle.Phi;
                 pupilDiameterR = pupilData.Diameter3d;
+
+                valueListThetaR.Add(thetaR);
+                valueListPhiR.Add(phiR);
+                valueListPupilR.Add(pupilDiameterR);
 
                 EyeRStatus.text = "Theta R = " + Mathf.Round((float) ((thetaR - prevThetaR) / (time - prevTimeR))).ToString() + "\tPhi R = " + Mathf.Round((float) ((phiR - prevPhiR) / (time - prevTimeR))).ToString() + "\tPupil R = " + (Mathf.Round(pupilDiameterR * 10) / 10).ToString();
 

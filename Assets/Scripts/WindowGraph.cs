@@ -101,13 +101,13 @@ public class WindowGraph : MonoBehaviour
 
         gameObjectList = new List<GameObject>();
 
-        List<float> valueListThetaL = new List<float> { };
-        List<float> valueListPhiL = new List<float> { };
-        List<float> valueListPupilL = new List<float> { };
+        //List<float> valueListThetaL = new List<float> { };
+        //List<float> valueListPhiL = new List<float> { };
+        //List<float> valueListPupilL = new List<float> { };
 
-        List<float> valueListThetaR = new List<float> { };
-        List<float> valueListPhiR = new List<float> { };
-        List<float> valueListPupilR = new List<float> { };
+        //List<float> valueListThetaR = new List<float> { };
+        //List<float> valueListPhiR = new List<float> { };
+        //List<float> valueListPupilR = new List<float> { };
 
         List<Color> colorList = new List<Color> { Color.green, Color.cyan, Color.blue, Color.red, Color.magenta, Color.yellow };
 
@@ -125,72 +125,91 @@ public class WindowGraph : MonoBehaviour
 
             PupilDataDemo values = pupilSubscriber.GetComponent<PupilDataDemo>();
 
-            if (values.listener != null ) {
-                valueListThetaL.Add(values.thetaL);
-                valueListPhiL.Add(values.phiL);
-                valueListPupilL.Add(values.pupilDiameterL * 10.0f);
-
-                valueListThetaR.Add(values.thetaR);
-                valueListPhiR.Add(values.phiR);
-                valueListPupilR.Add(values.pupilDiameterR * 10.0f);
-            }
-
-            List<List<float>> data = new List<List<float>> { valueListThetaL, valueListPhiL, valueListPupilL, valueListThetaR, valueListPhiR, valueListPupilR };
-
-            time.Add(Time.time);
-
-            float max = -1.0f/0.0f;
-            float min = 1.0f/0.0f;
-
-            for (int i = 0; i < activationList.Count; i++)
+            if (values.listener != null)
             {
-                if (activationList[i] && MaxYValue(data[i]) > max)
-                {
-                    max = MaxYValue(data[i]);
-                }
 
-                if (activationList[i] && MinYValue(data[i]) < min)
-                {
-                    min = MinYValue(data[i]);
-                }
-            }
+                List<float> valueListThetaL = values.valueListThetaL;
+                List<float> valueListPhiL = values.valueListPhiL;
+                List<float> valueListPupilL = values.valueListPupilL;
 
-            if (iteration % 10 == 0)
-            {
-                ClearAll();
+                List<float> valueListThetaR = values.valueListThetaR;
+                List<float> valueListPhiR = values.valueListPhiR;
+                List<float> valueListPupilR = values.valueListPupilR;
+
+                //if (values.listener != null ) {
+                //    valueListThetaL.Add(values.thetaL);
+                //    valueListPhiL.Add(values.phiL);
+                //    valueListPupilL.Add(values.pupilDiameterL * 10.0f);
+
+                //    valueListThetaR.Add(values.thetaR);
+                //    valueListPhiR.Add(values.phiR);
+                //    valueListPupilR.Add(values.pupilDiameterR * 10.0f);
+                //}
+
+
+                List<List<float>> data = new List<List<float>> { valueListThetaL, valueListPhiL, valueListPupilL, valueListThetaR, valueListPhiR, valueListPupilR };
+
+                time.Add(Time.time);
+
+                float max = -1.0f / 0.0f;
+                float min = 1.0f / 0.0f;
 
                 for (int i = 0; i < activationList.Count; i++)
                 {
-                    if (activationList[i])
+                    if (activationList[i] && MaxYValue(data[i], numDisplayedValues) > max)
                     {
-                        ShowGraph(data[i], colorList[i], max, min, numDisplayedValues);
+                        max = MaxYValue(data[i], numDisplayedValues);
+                    }
+
+                    if (activationList[i] && MinYValue(data[i], numDisplayedValues) < min)
+                    {
+                        min = MinYValue(data[i], numDisplayedValues);
                     }
                 }
-                //ShowGraph(valueListThetaL, Color.green, max, min, numDisplayedValues);
 
-                CreateLabelY(max, min);
-                CreateLabelX(valueListThetaL.Count, numDisplayedValues);
-            }
-
-            if ((numDisplayedValues > 0) && (valueListThetaL.Count >= numDisplayedValues))
-            {
-                for (int i = 0; i < valueListThetaL.Count - numDisplayedValues; i++)
+                if (iteration % 10 == 0)
                 {
-                    valueListThetaL.RemoveAt(0);
-                    valueListPhiL.RemoveAt(0);
-                    valueListPupilL.RemoveAt(0);
+                    ClearAll();
 
-                    valueListThetaR.RemoveAt(0);
-                    valueListPhiR.RemoveAt(0);
-                    valueListPupilR.RemoveAt(0);
+                    for (int i = 0; i < activationList.Count; i++)
+                    {
+                        if (activationList[i])
+                        {
+                            ShowGraph(data[i], colorList[i], max, min, numDisplayedValues);
+                        }
+                    }
+                    //ShowGraph(valueListThetaL, Color.green, max, min, numDisplayedValues);
 
-                    time.RemoveAt(0);
+                    CreateLabelY(max, min);
+                    CreateLabelX(valueListThetaL.Count, numDisplayedValues);
                 }
-            }
 
-            iteration++;
-            //print(MinYValue(valueListPupilR) + "\t" + MaxYValue(valueListPupilL));
-            print(min + "\t" + max);
+                if ((numDisplayedValues > 0) && (time.Count >= numDisplayedValues))
+                {
+                    while (time.Count > numDisplayedValues)
+                    {
+                        print(time.Count);
+                        time.RemoveAt(0);
+                    }
+                    //for (int i = 0; i < valueListThetaL.Count - numDisplayedValues; i++)
+                    //{
+                    //    //valueListThetaL.RemoveAt(0);
+                    //    //valueListPhiL.RemoveAt(0);
+                    //    //valueListPupilL.RemoveAt(0);
+
+                    //    //valueListThetaR.RemoveAt(0);
+                    //    //valueListPhiR.RemoveAt(0);
+                    //    //valueListPupilR.RemoveAt(0);
+
+                    //    time.RemoveAt(0);
+                    //}
+                }
+
+                iteration++;
+                //print(MinYValue(valueListPupilR) + "\t" + MaxYValue(valueListPupilL));
+                //print(min + "\t" + max);
+
+            }
 
         }, 0.1f);
     }
@@ -238,32 +257,79 @@ public class WindowGraph : MonoBehaviour
 
     
     //add parameter activationList of type List<bool> to get max of all active relevant lists
-    private float MaxYValue(List<float> valueList)
+    private float MaxYValue(List<float> valueList, int maxVisibleNumValues)
     {
-        float maxValue = valueList[0];
-        foreach (float value in valueList)
+        if (maxVisibleNumValues < 0 || maxVisibleNumValues > valueList.Count)
         {
-            if (value > maxValue)
+            maxVisibleNumValues = valueList.Count;
+        }
+
+        //print(valueList.Count + "\t" + maxVisibleNumValues);
+        print(valueList.Count + "\t" + maxVisibleNumValues);
+        float maxValue = valueList[valueList.Count - maxVisibleNumValues];
+
+        for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
+        {
+            if (valueList[i] > maxValue)
             {
-                maxValue = value;
+                maxValue = valueList[i];
             }
         }
+
+        //if (maxVisibleNumValues < 0)
+        //{
+        //    foreach (float value in valueList)
+        //    {
+        //        if (value > maxValue)
+        //        {
+        //            maxValue = value;
+        //        }
+        //    }
+        //}
+
+        //else
+        //{
+        //    maxValue = valueList[]
+        //    for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
+        //    {
+        //        if (valueList[i] > maxValue)
+        //        {
+        //            maxValue = valueList[i];
+        //        }
+        //    }
+        //}
 
         return maxValue;
     }
 
-    private float MinYValue(List<float> valueList)
+    private float MinYValue(List<float> valueList, int maxVisibleNumValues)
     {
-        float minValue = valueList[0];
-        foreach (float value in valueList)
+        if (maxVisibleNumValues < 0 || maxVisibleNumValues > valueList.Count)
         {
-            if (value < minValue)
+            maxVisibleNumValues = valueList.Count;
+        }
+
+        float minValue = valueList[valueList.Count - maxVisibleNumValues];
+
+        for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
+        {
+            if (valueList[i] < minValue)
             {
-                minValue = value;
+                minValue = valueList[i];
             }
         }
 
         return minValue;
+        //float minValue = valueList[0];
+        //foreach (float value in valueList)
+        //{
+        //    if (value < minValue)
+        //    {
+        //        minValue = value;
+        //    }
+        //}
+
+        //return minValue;
     }
 
     private void ClearAll()
@@ -398,7 +464,7 @@ public class WindowGraph : MonoBehaviour
 
     private void ShowGraph(List<float> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1)
     {
-        if (maxVisibleNumValues <= 0)
+        if (maxVisibleNumValues <= 0 || maxVisibleNumValues > valueList.Count)
         {
             maxVisibleNumValues = valueList.Count;
         }
@@ -422,7 +488,7 @@ public class WindowGraph : MonoBehaviour
 
         GameObject prevDot = null;
 
-        for (int i = 0; i < valueList.Count; i++)
+        for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
         {
             float xPosition = xIndex * xSize;
             float yPosition = ((valueList[i] - yMin) / (yMax - yMin)) * graphHeight;
