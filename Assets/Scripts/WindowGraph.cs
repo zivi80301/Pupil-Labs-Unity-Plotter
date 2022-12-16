@@ -29,16 +29,14 @@ public class WindowGraph : MonoBehaviour
 
     private List<GameObject> gameObjectList;
 
-    //private List<float> time;
-
     public int numDisplayedValues = 100;
+    public float updatePeriod = 0.1f;
 
     int iteration = 0;
 
     private void Start()
     {
         graphContainer = transform.Find("GraphContainer").GetComponent<RectTransform>();
-        //time = new List<float> { Time.time };
 
         labelTemplateX = graphContainer.Find("LabelTemplateX").GetComponent<RectTransform>();
         labelTemplateY = graphContainer.Find("LabelTemplateY").GetComponent<RectTransform>();
@@ -78,8 +76,6 @@ public class WindowGraph : MonoBehaviour
 
                 List<List<float>> data = new List<List<float>> { valueListThetaL, valueListPhiL, valueListPupilL, valueListThetaR, valueListPhiR, valueListPupilR };
 
-                //time.Add(Time.time);
-
                 float max = -1.0f / 0.0f;
                 float min = 1.0f / 0.0f;
 
@@ -112,20 +108,11 @@ public class WindowGraph : MonoBehaviour
                     CreateLabelX(time, numDisplayedValues);
                 }
 
-                //if ((numDisplayedValues > 0) && (time.Count >= numDisplayedValues))
-                //{
-                //    while (time.Count > numDisplayedValues)
-                //    {
-                //        print(time.Count);
-                //        time.RemoveAt(0);
-                //    }
-                //}
-
                 iteration++;
 
             }
 
-        }, 0.1f);
+        }, updatePeriod);
     }
 
     private GameObject CreateDot(Vector2 anchoredPosition)
@@ -141,7 +128,6 @@ public class WindowGraph : MonoBehaviour
         return gameObject;
     }
     
-    //add parameter activationList of type List<bool> to get max of all active relevant lists
     private float MaxYValue(List<float> valueList, int maxVisibleNumValues)
     {
         if (maxVisibleNumValues < 0 || maxVisibleNumValues > valueList.Count)
@@ -149,7 +135,6 @@ public class WindowGraph : MonoBehaviour
             maxVisibleNumValues = valueList.Count;
         }
 
-        //print(valueList.Count + "\t" + maxVisibleNumValues);
         float maxValue = valueList[valueList.Count - maxVisibleNumValues];
 
         for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
@@ -196,26 +181,10 @@ public class WindowGraph : MonoBehaviour
 
     private void CreateLabelX(List<float> time, int maxVisibleNumValues)
     {
-        //spacing of x-values in (data points)
-        int labelXSpacing = 10;
-
-        //if(plot all values == true) -> set limit to #total values
         if(maxVisibleNumValues <= 0 || maxVisibleNumValues > time.Count)
         {
             maxVisibleNumValues = time.Count;
         }
-
-        print(maxVisibleNumValues);
-        //if (maxVisibleNumValues <= 0)
-        //{
-        //    maxVisibleNumValues = time.Count;
-        //    labelXSpacing = 5 * ((int)(Mathf.Log10(time.Count) / Mathf.Log10(5)) + 1);
-        //}
-
-        //else
-        //{
-        //    labelXSpacing = 10;
-        //}
 
         //width of rectangel containing graph in pixels
         float graphWidth = graphContainer.sizeDelta.x;
@@ -230,10 +199,8 @@ public class WindowGraph : MonoBehaviour
         //iterate over values to be displayed
         for (int i = time.Count - maxVisibleNumValues; i < time.Count; i++)
         {
-            //print("XLabel Called");
-            //print(xIndex);
             float xPosition = xSize * (i - time.Count + maxVisibleNumValues);
-            //if (xPosition % labelXSpacing == 0)
+    
             if(maxVisibleNumValues / xIndex == 10)
             {
                 RectTransform labelX = Instantiate(labelTemplateX);
