@@ -47,7 +47,7 @@ namespace PupilLabs.Demos
 
         string path = "Assets/Data/rawdata" + DateTime.Now.ToString().Replace("/", "-").Replace(" ", "_").Replace(":", "-") + ".txt";
 
-        //on enable resgiter new listener if none is registered. enable listener
+        //on enable register new listener if none is registered. enable listener
         void OnEnable()
         {
             if (listener == null)
@@ -83,7 +83,7 @@ namespace PupilLabs.Demos
                 valueListPupilL.Add(pupilDiameterL);
                 time.Add((float) timeStamp);
 
-                string text = "Theta L = " + Mathf.Round(thetaL).ToString() + "\tPhi L = " + Mathf.Round(phiL).ToString() + "\tPupil L = " + (Mathf.Round(pupilDiameterL * 10) / 10).ToString() + "\tt = " + timeStamp;
+                string text = "Theta L = " + thetaL.ToString() + "\tPhi L = " + phiL.ToString() + "\tPupil L = " + (Mathf.Round(pupilDiameterL * 10) / 10).ToString() + "\tt = " + timeStamp;
 
                 EyeLStatus.text = text;
 
@@ -104,7 +104,7 @@ namespace PupilLabs.Demos
                 valueListPhiR.Add(phiR);
                 valueListPupilR.Add(pupilDiameterR);
 
-                string text = "Theta R = " + Mathf.Round(thetaR).ToString() + "\tPhi R = " + Mathf.Round(phiR).ToString() + "\tPupil R = " + (Mathf.Round(pupilDiameterR * 10) / 10).ToString() + "\tt = " + timeStamp;
+                string text = "Theta R = " + thetaR.ToString() + "\tPhi R = " + phiR.ToString() + "\tPupil R = " + (Mathf.Round(pupilDiameterR * 10) / 10).ToString() + "\tt = " + timeStamp;
 
                 EyeRStatus.text = text;
 
