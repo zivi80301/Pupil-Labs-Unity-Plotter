@@ -42,14 +42,21 @@ public class WindowGraph : MonoBehaviour
     private List<GameObject> gameObjectList;
 
     //number of data points to be plotted
-    public int numDisplayedValues = 100;
+    public int numDisplayedValues = 200;
     public int updatePeriod = 20;
+    public int baselinePeriod = 200;
+    public string mode = "default";
+    public float triggerTime;
+    public int sizeOnTrigger;
+    public float experimentDuration = 10;
 
     //colors of different chart lines
     List<Color> colorList = new List<Color> { Color.green, Color.cyan, Color.blue, Color.red, Color.magenta, Color.yellow };
 
     //used to determine the frequency at which the chart is updated
     int iteration = 0;
+
+    List<float> time;
 
     //to check if new data is available
     double prevTime = 0;
@@ -76,42 +83,13 @@ public class WindowGraph : MonoBehaviour
 
     void FixedUpdate()
     {
-        //Default: as is
-        //DemoExperiment: pupilLStatus = true, pupilRStatus = true
-        //                average out past pupil values
-        //                plot pupilValues - average normally for n seconds after button press
-        //                change mode outside of game before launch
-
-        //TODO: SetModeDefault():
-        //          change mode
-        //          change active
-        //      SetModeDemoExperiment()
-        //          change mode
-        //          change active
-        //      PlotDefault(values, numDisplayedValues, yMax, yMain, activationList, time, prevTime, color):
-        //          clear current canvase, plot all active values according to numDisplayedValues, write all data to .txt file
-        //      PlotDemoExperiment(values, experimentTime, yMax, yMin, activationList, time, prevTime, color):
-        //          clear current canvase
-        //          calculate numDisplayedValues from experiment time
-        //          plot active values - average of previous n data points before trigger
-        //          write pupil diameter to .txt file during experiment interval 
-        //          stop plotting, but do not clear graph once finished
-
-        //Structure:
-        //      FixedUpdate:
-        //          get values; get active; get yMin/yMax
-        //          if(mode == default && index%period == 0):
-        //              PlotDefault(...)
-        //          if(mode == demoExperiment && index%period == 0 && DemoExperimentTrigger == true):
-        //              PlotExperiment
-
         List<bool> activationList = new List<bool> { thetaLStatus.isOn, phiLStatus.isOn, pupilLStatus.isOn, thetaRStatus.isOn, phiRStatus.isOn, pupilRStatus.isOn };
 
         PupilDataDemo values = pupilSubscriber.GetComponent<PupilDataDemo>();
 
         if (values.listener != null)
         {
-
+            print(sizeOnTrigger);
             List<float> valueListThetaL = values.valueListThetaL;
             List<float> valueListPhiL = values.valueListPhiL;
             List<float> valueListPupilL = values.valueListPupilL;
@@ -120,54 +98,44 @@ public class WindowGraph : MonoBehaviour
             List<float> valueListPhiR = values.valueListPhiR;
             List<float> valueListPupilR = values.valueListPupilR;
 
-            List<float> time = values.time;
+            time = values.time;
 
             List<List<float>> data = new List<List<float>> { valueListThetaL, valueListPhiL, valueListPupilL, valueListThetaR, valueListPhiR, valueListPupilR };
 
-            float yMax = -1.0f / 0.0f;
-            float yMin = 1.0f / 0.0f;
+            //print(activationList[0] + "\t" + activationList[1] + "\t" + activationList[2] + "\t" + activationList[3] + "\t" + activationList[4] + "\t" + activationList[5]);
 
-            for (int i = 0; i < activationList.Count; i++)
+            //List<float> baseline = new List<float> { 50, 50, 50, 50, 50, 50 };
+            List<float> baseline = new List<float> { 0, 0, 0, 0, 0, 0 };
+
+            //if (sizeOnTrigger >= baselinePeriod)
+            //{
+            //    for (int i = 0; i < data.Count; i++)
+            //    {
+            //        baseline.Add(Average(data[i].GetRange(sizeOnTrigger - baselinePeriod, baselinePeriod)));
+            //    }
+            //}
+
+            //else
+            //{
+            //    for (int i = 0; i < data.Count; i++)
+            //    {
+            //        baseline.Add(Average(data[i]));
+            //    }
+            //}
+
+            if (mode == "default")
             {
-                if (activationList[i] && MaxYValue(data[i], numDisplayedValues) > yMax)
-                {
-                    yMax = MaxYValue(data[i], numDisplayedValues);
-                }
-
-                if (activationList[i] && MinYValue(data[i], numDisplayedValues) < yMin)
-                {
-                    yMin = MinYValue(data[i], numDisplayedValues);
-                }
+                PlotDefault(data, time, activationList, numDisplayedValues, prevTime, colorList, path, iteration, updatePeriod);
             }
 
-            PlotDefault(data, time, activationList, yMax, yMin, numDisplayedValues, prevTime, colorList, path, iteration, updatePeriod);
-            //if (iteration % 50 == 0 && time.Last() != prevTime)
-            //{
-            //    ClearAll();
-
-            //    for (int i = 0; i < activationList.Count; i++)
-            //    {
-            //        if (activationList[i])
-            //        {
-            //            ShowGraph(data[i], colorList[i], max, min, numDisplayedValues);
-            //        }
-            //    }
-
-            //    CreateLabelY(max, min);
-            //    CreateLabelX(time, numDisplayedValues);
-            //}
-
-            //if (time.Last() != prevTime)
-            //{
-            //    string text = "Theta L = " + valueListThetaL.Last() +
-            //        "\tPhi L = " + valueListPhiL.Last() +
-            //        "\tPupil L = " + valueListPupilL.Last() +
-            //        "\tTheta R = " + valueListThetaR.Last() +
-            //        "\tPhi R = " + valueListPhiR.Last() +
-            //        "\tPupil R = " + valueListPupilR.Last() +
-            //        "\tt = " + time.Last();
-            //    PrintToText(path, text);
-            //}
+            if (mode == "experiment")
+            {
+                PlotExperiment(data, baseline, time, activationList, sizeOnTrigger, prevTime, triggerTime, colorList, iteration, updatePeriod, baselinePeriod);
+                if (time.Last() - triggerTime >= experimentDuration)
+                {
+                    mode = "none";
+                }
+            }
 
             iteration++;
             prevTime = time.Last();
@@ -176,7 +144,26 @@ public class WindowGraph : MonoBehaviour
 
     }
 
+    public void SetModeDefault()
+    {
+        mode = "default";
+    }
 
+    public void SetModeExperiment()
+    {
+        mode = "experiment";
+
+        sizeOnTrigger = time.Count;
+        triggerTime = time.Last();
+
+        thetaLStatus.isOn = false;
+        phiLStatus.isOn = false;
+        pupilLStatus.isOn = true;
+        thetaRStatus.isOn = false;
+        phiRStatus.isOn = false;
+        pupilRStatus.isOn = true;
+    }
+    
     private GameObject CreateDot(Vector2 anchoredPosition)
     {
         GameObject gameObject = new GameObject("dot", typeof(Image));
@@ -190,40 +177,40 @@ public class WindowGraph : MonoBehaviour
         return gameObject;
     }
 
-    private float MaxYValue(List<float> valueList, int maxVisibleNumValues)
+    private float MaxYValue(List<float> valueList, int maxVisibleNumValues, float offset = 0)
     {
         if (maxVisibleNumValues < 0 || maxVisibleNumValues > valueList.Count)
         {
             maxVisibleNumValues = valueList.Count;
         }
 
-        float maxValue = valueList[valueList.Count - maxVisibleNumValues];
+        float maxValue = valueList[valueList.Count - maxVisibleNumValues] - offset;
 
         for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
         {
-            if (valueList[i] > maxValue)
+            if (valueList[i] - offset > maxValue)
             {
-                maxValue = valueList[i];
+                maxValue = valueList[i] - offset;
             }
         }
 
         return maxValue;
     }
 
-    private float MinYValue(List<float> valueList, int maxVisibleNumValues)
+    private float MinYValue(List<float> valueList, int maxVisibleNumValues, float offset = 0)
     {
         if (maxVisibleNumValues < 0 || maxVisibleNumValues > valueList.Count)
         {
             maxVisibleNumValues = valueList.Count;
         }
 
-        float minValue = valueList[valueList.Count - maxVisibleNumValues];
+        float minValue = valueList[valueList.Count - maxVisibleNumValues] - offset;
 
         for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
         {
-            if (valueList[i] < minValue)
+            if (valueList[i] - offset < minValue)
             {
-                minValue = valueList[i];
+                minValue = valueList[i] - offset;
             }
         }
 
@@ -324,7 +311,7 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
-    private void ShowGraph(List<float> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1)
+    private void ShowGraph(List<float> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1, float offset = 0)
     {
         if (maxVisibleNumValues <= 0 || maxVisibleNumValues > valueList.Count)
         {
@@ -353,7 +340,7 @@ public class WindowGraph : MonoBehaviour
         for (int i = valueList.Count - maxVisibleNumValues; i < valueList.Count; i++)
         {
             float xPosition = xIndex * xSize;
-            float yPosition = ((valueList[i] - yMin) / (yMax - yMin)) * graphHeight;
+            float yPosition = ((valueList[i] - yMin) / (yMax - yMin) - offset) * graphHeight;
 
             GameObject dot = CreateDot(new Vector2(xPosition, yPosition));
             gameObjectList.Add(dot);
@@ -395,8 +382,24 @@ public class WindowGraph : MonoBehaviour
         writer.Close();
     }
 
-    private void PlotDefault(List<List<float>> data, List<float> time, List<bool> activationList, float yMax, float yMin, int numDisplayedValues, double prevTime, List<Color> colorList, string path, int iteration, int updatePeriod)
+    private void PlotDefault(List<List<float>> data, List<float> time, List<bool> activationList, int numDisplayedValues, double prevTime, List<Color> colorList, string path, int iteration, int updatePeriod)
     {
+        float yMax = -1.0f / 0.0f;
+        float yMin = 1.0f / 0.0f;
+
+        for (int i = 0; i < activationList.Count; i++)
+        {
+            if (activationList[i] && MaxYValue(data[i], numDisplayedValues) > yMax)
+            {
+                yMax = MaxYValue(data[i], numDisplayedValues);
+            }
+
+            if (activationList[i] && MinYValue(data[i], numDisplayedValues) < yMin)
+            {
+                yMin = MinYValue(data[i], numDisplayedValues);
+            }
+        }
+
         List<float> valueListThetaL = data[0];
         List<float> valueListPhiL = data[1];
         List<float> valueListPupilL = data[2];
@@ -432,5 +435,61 @@ public class WindowGraph : MonoBehaviour
                 "\tt = " + time.Last();
             PrintToText(path, text);
         }
+    }
+
+    private void PlotExperiment(List<List<float>> data, List<float> baseline, List<float> time, List<bool> activationList, int sizeOnTrigger, 
+        double prevTime, float triggerTime, List<Color> colorList, int iteration, int updatePeriod, int baselinePeriod)
+    {
+        float yMax = -1.0f / 0.0f;
+        float yMin = 1.0f / 0.0f;
+
+        int numDisplayedValues = time.Count - sizeOnTrigger;
+
+        for (int i = 0; i < activationList.Count; i++)
+        {
+            if (activationList[i] && MaxYValue(data[i], numDisplayedValues, baseline[i]) > yMax)
+            {
+                yMax = MaxYValue(data[i], numDisplayedValues, baseline[i]);
+            }
+
+            if (activationList[i] && MinYValue(data[i], numDisplayedValues, baseline[i]) < yMin)
+            {
+                yMin = MinYValue(data[i], numDisplayedValues, baseline[i]);
+            }
+        }
+
+        //print("Min = " + yMin + "\tMax = " + yMax);
+
+
+        if (iteration % updatePeriod == 0 && time.Last() != prevTime)
+        {
+            ClearAll();
+
+            ShowGraph(data[2], colorList[2], yMax, yMin, numDisplayedValues, baseline[2]);
+            ShowGraph(data[5], colorList[5], yMax, yMin, numDisplayedValues, baseline[5]);
+
+            CreateLabelY(yMax, yMin);
+            CreateLabelX(time, numDisplayedValues);
+        }
+
+        if (time.Last() != prevTime)
+        {
+            string text = "Pupil L = " + (data[2].Last() - baseline[2]) +
+                "Pupil R = " + (data[5].Last() - baseline[5]) +
+                "\tt = " + time.Last();
+            PrintToText(path, text);
+        }
+    }
+
+    private float Average(List<float> values)
+    {
+        float temp = 0;
+
+        foreach(float value in values)
+        {
+            temp += value;
+        }
+
+        return temp / values.Count;
     }
 }
