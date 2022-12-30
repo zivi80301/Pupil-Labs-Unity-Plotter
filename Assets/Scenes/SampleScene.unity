@@ -1653,7 +1653,11 @@ MonoBehaviour:
   pupilSubscriber: {fileID: 2057827584}
   numDisplayedValues: 200
   updatePeriod: 20
+  baselinePeriod: 200
   mode: default
+  triggerTime: 0
+  sizeOnTrigger: 0
+  experimentDuration: 10
 --- !u!1001 &953580744
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2335,7 +2339,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1277309485}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 944157117}
+        m_TargetAssemblyTypeName: WindowGraph, Assembly-CSharp
+        m_MethodName: SetModeExperiment
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1277309485
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2856,7 +2872,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1623041249}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 944157117}
+        m_TargetAssemblyTypeName: WindowGraph, Assembly-CSharp
+        m_MethodName: SetModeDefault
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1623041249
 MonoBehaviour:
   m_ObjectHideFlags: 0
