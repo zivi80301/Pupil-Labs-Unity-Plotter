@@ -487,14 +487,27 @@ public class WindowGraph : MonoBehaviour
         }
 
         //print("Min = " + yMin + "\tMax = " + yMax);
+        float medianBaseline = 0;
+        int count = 0;
+
+        for(int i = 0; i < activationList.Count; i++)
+        {
+            if (activationList[i])
+            {
+                medianBaseline += baseline[i];
+                count++;
+            }
+        }
+
+        medianBaseline = medianBaseline / count;
 
 
         if (iteration % updatePeriod == 0 && time.Last() != prevTime)
         {
             ClearAll();
 
-            ShowGraph(data[2], colorList[2], yMax, yMin, numDisplayedValues, baseline[2]);
-            ShowGraph(data[5], colorList[5], yMax, yMin, numDisplayedValues, baseline[5]);
+            ShowGraph(data[2], colorList[2], yMax, yMin, numDisplayedValues, medianBaseline);
+            ShowGraph(data[5], colorList[5], yMax, yMin, numDisplayedValues, medianBaseline);
 
             CreateLabelY(yMax, yMin);
             CreateLabelX(time, numDisplayedValues);
