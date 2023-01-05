@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,11 +30,6 @@ namespace PupilLabs.Demos
 
         public float prevThetaR = 0;
         public float prevPhiR = 0;
-
-        //double prevTimeL = 0;
-        //double prevTimeR = 0;
-
-        //int index = 0;
 
         public List<float> valueListThetaL = new List<float> { };
         public List<float> valueListPhiL = new List<float> { };
@@ -78,9 +74,20 @@ namespace PupilLabs.Demos
                 phiL = Mathf.Rad2Deg * pupilData.Circle.Phi;
                 pupilDiameterL = pupilData.Diameter3d * 10.0f;
 
-                valueListThetaL.Add(thetaL);
-                valueListPhiL.Add(phiL);
-                valueListPupilL.Add(pupilDiameterL);
+                if (!IsBlinking(pupilData))
+                {
+                    valueListThetaL.Add(thetaL);
+                    valueListPhiL.Add(phiL);
+                    valueListPupilL.Add(pupilDiameterL);
+                }
+
+                else
+                {
+                    valueListThetaL.Add(valueListThetaL.Last());
+                    valueListPhiL.Add(valueListPhiL.Last());
+                    valueListPupilL.Add(valueListPupilL.Last());
+                }
+
                 time.Add((float) timeStamp);
 
                 string text = "Theta L = " + thetaL.ToString() + "\tPhi L = " + phiL.ToString() + "\tPupil L = " + (Mathf.Round(pupilDiameterL * 10) / 10).ToString() + "\tt = " + timeStamp;
@@ -88,8 +95,6 @@ namespace PupilLabs.Demos
                 EyeLStatus.text = text;
 
                 PrintToText(path, text);
-
-                //prevTimeL = timeStamp;
             }
 
             if (pupilData.EyeIdx == 0 && !(pupilData.Circle.Theta == 0 || pupilData.Circle.Phi == 0 || pupilData.Diameter3d == 0))
@@ -100,17 +105,25 @@ namespace PupilLabs.Demos
                 phiR = Mathf.Rad2Deg * pupilData.Circle.Phi;
                 pupilDiameterR = pupilData.Diameter3d * 10.0f;
 
-                valueListThetaR.Add(thetaR);
-                valueListPhiR.Add(phiR);
-                valueListPupilR.Add(pupilDiameterR);
+                if (!IsBlinking(pupilData))
+                {
+                    valueListThetaR.Add(thetaR);
+                    valueListPhiR.Add(phiR);
+                    valueListPupilR.Add(pupilDiameterR);
+                }
+
+                else
+                {
+                    valueListThetaR.Add(valueListThetaR.Last());
+                    valueListPhiR.Add(valueListPhiR.Last());
+                    valueListPupilR.Add(valueListPupilR.Last());
+                }
 
                 string text = "Theta R = " + thetaR.ToString() + "\tPhi R = " + phiR.ToString() + "\tPupil R = " + (Mathf.Round(pupilDiameterR * 10) / 10).ToString() + "\tt = " + timeStamp;
 
                 EyeRStatus.text = text;
 
                 PrintToText(path, text);
-
-                //prevTimeR = timeStamp;
             }
         }
 
@@ -121,23 +134,14 @@ namespace PupilLabs.Demos
             writer.Close();
         }
 
-        //void LogExperiment(PupilData pupilData)
-        //{
-        //    if(pupilData.EyeIdx == 0)
-        //    {
-        //        double timeStamp = timeSync.ConvertToUnityTime(pupilData.PupilTimestamp);
+        bool IsBlinking(PupilData pupilData)
+        {
+            if(pupilData.Confidence < 0.8f)
+            {
+                return true;
+            }
 
-        //        pupilDiameterL = pupilData.Diameter3d * 10.0f;
-        //        valueListPupilL.Add(pupilDiameterL);
-        //    }
-
-        //    if(pupilData.EyeIdx == 1)
-        //    {
-        //        double timeStamp = timeSync.ConvertToUnityTime(pupilData.PupilTimestamp);
-
-        //        pupilDiameterR = pupilData.Diameter3d * 10.0f;
-        //        valueListPupilR.Add(pupilDiameterR);
-        //    }
-        //}
+            return false;
+        }
     }
 }
