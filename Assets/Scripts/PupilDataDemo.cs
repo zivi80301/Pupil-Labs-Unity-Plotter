@@ -9,14 +9,16 @@ namespace PupilLabs.Demos
 {
     public class PupilDataDemo : MonoBehaviour
     {
+        //Pupil classes
         public SubscriptionsController subsCtrl;
         public TimeSync timeSync;
+        public PupilListener listener;
 
+        //UI text 
         public Text EyeLStatus;
         public Text EyeRStatus;
 
-        public PupilListener listener;
-
+        //Variables to store pupil values in
         public float thetaL;
         public float phiL;
         public float pupilDiameterL;
@@ -31,6 +33,7 @@ namespace PupilLabs.Demos
         public float prevThetaR = 0;
         public float prevPhiR = 0;
 
+        //Lists containint pupil data
         public List<float> valueListThetaL = new List<float> { };
         public List<float> valueListPhiL = new List<float> { };
         public List<float> valueListPupilL = new List<float> { };
@@ -39,8 +42,10 @@ namespace PupilLabs.Demos
         public List<float> valueListPhiR = new List<float> { };
         public List<float> valueListPupilR = new List<float> { };
 
+        //List containing timestamps
         public List<float> time = new List<float> { };
 
+        //Path to rawdata.txt file. The file title is timestamped with time and date of creation
         string path = "Assets/Data/rawdata" + DateTime.Now.ToString().Replace("/", "-").Replace(" ", "_").Replace(":", "-") + ".txt";
 
         //on enable register new listener if none is registered. enable listener
@@ -64,6 +69,8 @@ namespace PupilLabs.Demos
 
         //print pupilData.Method and pupilData.Confidence at unityTime
         //print theta and phi values of eye with index 0
+        //Takes PupilData pupilData
+        //Calls IsBlinking, PrintToText
         void ReceivePupilData(PupilData pupilData)
         {
             if (pupilData.EyeIdx == 1 && !(pupilData.Circle.Theta == 0 || pupilData.Circle.Phi == 0 || pupilData.Diameter3d == 0))
@@ -127,6 +134,7 @@ namespace PupilLabs.Demos
             }
         }
 
+        //Appends string text as new line to .txt file @ location path
         void PrintToText(string path, string text)
         {
             StreamWriter writer = new StreamWriter(path, true);
@@ -134,9 +142,11 @@ namespace PupilLabs.Demos
             writer.Close();
         }
 
+        //Returns true if confidence of measurement is less than 80% else returns false
+        //Takes pupilData
         bool IsBlinking(PupilData pupilData)
         {
-            if(pupilData.Confidence < 0.8f)
+            if(pupilData.Confidence < 0.9f)
             {
                 return true;
             }

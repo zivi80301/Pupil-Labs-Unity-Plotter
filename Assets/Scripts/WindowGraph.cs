@@ -11,16 +11,16 @@ public class WindowGraph : MonoBehaviour
 {
     [SerializeField]
 
-    //sprite used to draw line chart
+    //Sprite used to draw line chart
     private Sprite dotSprite;
 
-    //path to the .txt file where data is stored
+    //Path to the .txt file where data is stored
     string path = "Assets/Data/data" + DateTime.Now.ToString().Replace("/", "-").Replace(" ", "_").Replace(":", "-") + ".txt";
 
-    //pupil subscriber supplying data to ploter
+    //Pupil subscriber supplying data to ploter
     public PupilDataDemo pupilSubscriber;
 
-    //toggle buttons
+    //Toggle buttons
     private Toggle thetaLStatus;
     private Toggle phiLStatus;
     private Toggle pupilLStatus;
@@ -29,39 +29,52 @@ public class WindowGraph : MonoBehaviour
     private Toggle phiRStatus;
     private Toggle pupilRStatus;
 
-    //ui element containing line chart
+    //UI element containing line chart
     private RectTransform graphContainer;
 
-    //template objects used to mark axis
+    //Template objects used to mark axis
     private RectTransform labelTemplateX;
     private RectTransform labelTemplateY;
     private RectTransform dashTemplateX;
     private RectTransform dashTemplateY;
 
-    //list of all ui elements making up the chart
+    //List of all ui elements making up the chart
     private List<GameObject> gameObjectList;
 
-    //number of data points to be plotted
+    //Number of data points to be plotted
     public int numDisplayedValues = 200;
-    public int updatePeriod = 100;
-    public int baselinePeriod = 1000;
-    public string mode = "none";
-    private float triggerTime;
-    private int sizeOnTrigger;
-    public float experimentDuration = 10;
-    //public float offset = 20.0f;
 
-    //colors of different chart lines
+    //Number of iterations which need to pass for the Chart to be updated
+    public int updatePeriod = 100;
+
+    //Number of data points considered to average over when calculating the baseline value
+    public int baselinePeriod = 1000;
+
+    //Mode of operation. default for raw data plotting, experiment when using the experiment funcitonality
+    public string mode = "none";
+
+    //Timestamp at which experiment is started
+    private float triggerTime;
+
+    //Number of elements in the list containing timestamps when experiment is started
+    private int sizeOnTrigger;
+
+    //Duration for which data is plotted in experiment mode in seconds
+    public float experimentDuration = 10;
+
+    //Colors of different chart lines
     List<Color> colorList = new List<Color> { Color.green, Color.cyan, Color.blue, Color.red, Color.magenta, Color.yellow };
 
-    //used to determine the frequency at which the chart is updated
+    //Used to determine the frequency at which the chart is updated
     int iteration = 0;
-
+    
+    //List containing timestamps 
     List<float> time;
 
-    //to check if new data is available
+    //To check if new data is available
     double prevTime = 0;
 
+    //Initializes some UI elements
     private void Start()
     {
         graphContainer = transform.Find("GraphContainer").GetComponent<RectTransform>();
@@ -82,6 +95,8 @@ public class WindowGraph : MonoBehaviour
         pupilRStatus = graphContainer.Find("PupilR").GetComponent<Toggle>();
     }
 
+    //Iterates over pupil data and updates chart every updatePeriod iteration. Plots data depending on mode of operation and selected values to be plotted
+    //Calls Average, PlotDefault, PlotExperiment, PrintToText
     void FixedUpdate()
     {
         List<bool> activationList = new List<bool> { thetaLStatus.isOn, phiLStatus.isOn, pupilLStatus.isOn, thetaRStatus.isOn, phiRStatus.isOn, pupilRStatus.isOn };
@@ -171,11 +186,13 @@ public class WindowGraph : MonoBehaviour
 
     }
 
+    //Called on button press. Sets mode to default
     public void SetModeDefault()
     {
         mode = "default";
     }
 
+    //Called on button oress. Sets mode to experiment, activates pupilL and pupilR, deactivates the rest. Sets sizeOnTrigger and triggerTime at time of button press
     public void SetModeExperiment()
     {
         mode = "experiment";
@@ -191,6 +208,9 @@ public class WindowGraph : MonoBehaviour
         pupilRStatus.isOn = true;
     }
     
+    //Ceates dot object form dot sprite at coordinates anchoredPosition
+    //Takes Vector2 anchoredPosition
+    //Returns position of created dot
     private GameObject CreateDot(Vector2 anchoredPosition)
     {
         GameObject gameObject = new GameObject("dot", typeof(Image));
@@ -204,6 +224,9 @@ public class WindowGraph : MonoBehaviour
         return gameObject;
     }
 
+    //Calculates maximum of last maxVisibleNumValues elements in a list of floats. Optionally applies the offset baseline
+    //Takes List<float> valueList, the list to find the maximum in, int maxVisibleNumValues the number of values to consider, flaot baseline the optional offset
+    //Returns float maximum
     private float MaxYValue(List<float> valueList, int maxVisibleNumValues, float baseline = 0)
     {
         if (maxVisibleNumValues < 0 || maxVisibleNumValues > valueList.Count)
@@ -224,6 +247,9 @@ public class WindowGraph : MonoBehaviour
         return maxValue;
     }
 
+    //Calculates minimum of last maxVisibleNumValues elements in a list of floats. Optionally applies the offset baseline
+    //Takes List<float> valueList, the list to find the minimum in, int maxVisibleNumValues the number of values to consider, flaot baseline the optional offset
+    //Retuns float minimum
     private float MinYValue(List<float> valueList, int maxVisibleNumValues, float baseline = 0)
     {
         if (maxVisibleNumValues < 0 || maxVisibleNumValues > valueList.Count)
@@ -245,6 +271,7 @@ public class WindowGraph : MonoBehaviour
 
     }
 
+    //Removes all UI elements cerated by this script
     private void ClearAll()
     {
         foreach (GameObject gameObject in gameObjectList)
@@ -255,6 +282,8 @@ public class WindowGraph : MonoBehaviour
         gameObjectList.Clear();
     }
 
+    //Creates evenly spaced label for time axis with timestamps
+    //Takes List<float> time the list with all timestamps, maxVisibleNumValues the number of values to be displayed
     private void CreateLabelX(List<float> time, int maxVisibleNumValues)
     {
         if (maxVisibleNumValues <= 0 || maxVisibleNumValues > time.Count)
@@ -304,6 +333,8 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
+    //Creates evenly spaced label for input values, adaptively changes linear scale to fit range of displayed data to the size of the chart.
+    //Takes float yMax the maximum upper limit of displayed data, float yMin the lower limit of displayed data
     private void CreateLabelY(float yMax, float yMin)
     {
         float separatorCount = 11.0f;
@@ -338,7 +369,11 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
-    private void ShowGraph(List<float> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1, float baseline = 0)
+    //Creates 2D objects to make up line chart from input data in form of a list of floats
+    //Takes List<float> valueList the input data, Color color the color associated with this data series, float yMax, yMin the maximum and minimum of all input values, not necessarily in the valueList, 
+    //int maxVisibleNumValues the number of values to be plotted, default is all, float baseline the offset to apply to input data, default is 0
+    //Calls CrateDot, CreateDotConnection
+    private void ShowGraph(List<float> valueList, Color color, float yMax, float yMin, int maxVisibleNumValues = -1, float baseline = 0.0f)
     {
         if (maxVisibleNumValues <= 0 || maxVisibleNumValues > valueList.Count)
         {
@@ -384,6 +419,9 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
+    //Draws line between two 2D points on the chart
+    //Takes Vector2 startPosition, endPosition the coordinates of both ends of the straight line
+    //Returns Vector2 the position of the line object
     private GameObject CreateDotConnection(Vector2 startPosition, Vector2 endPosition, Color color)
     {
         GameObject gameObject = new GameObject("dotConnection", typeof(Image));
@@ -402,6 +440,8 @@ public class WindowGraph : MonoBehaviour
         return gameObject;
     }
 
+    //Appends line text to .txt file at location path
+    //Takes string path the path to the .txt file, text the line to be appended to the text file
     private void PrintToText(string path, string text)
     {
         StreamWriter writer = new StreamWriter(path, true);
@@ -409,6 +449,11 @@ public class WindowGraph : MonoBehaviour
         writer.Close();
     }
 
+    //Plotts data series selected with UI toggle buttons
+    //Takes List<List<float> data the list containing the individual data series, List<float> time the list containing all timestamps, int numDisplayValues the number of datapoints to plot
+    //double prevTime the last timestamp when new data was awaylable, List<Color> color the colorList, string path the path to the .txt file storing the data, int iteration the current iteration in the FixedUpdate function
+    //the flobal updatePeriod
+    //Calls MaxYValue, MinYValue, ClearAll, ShowGraph, CreateLabelY, CreateLabelX, PrintToText
     private void PlotDefault(List<List<float>> data, List<float> time, List<bool> activationList, int numDisplayedValues, double prevTime, List<Color> colorList, string path, int iteration, int updatePeriod)
     {
         float yMax = -1.0f / 0.0f;
@@ -464,6 +509,12 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
+    //Plotts pupil size data series for both eyes for a predetermined timeframe
+    //Takes List<List<float> data the list containing the individual data series, List<float> baseline contains the baseline for each data series, List<float> time the list containing all timestamps,
+    //List<bool> activationList list of bools storing the activation status for each pupil data series, int sizeOnTrigger the^number of elements in the timeStamp list time,
+    //double prevTime the last timestamp when new data was awaylable, List<Color> color the colorList, int iteration the current iteration in the FixedUpdate function, int updatePeriod
+    //the global updatePeriod
+    //Calls MaxYValue, MinYValue, ClearAll, ShowGraph, CreateLabelY, CreateLabelX, PrintToText
     private void PlotExperiment(List<List<float>> data, List<float> baseline, List<float> time, List<bool> activationList, int sizeOnTrigger, 
         double prevTime, float triggerTime, List<Color> colorList, int iteration, int updatePeriod)
     {
@@ -522,6 +573,9 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
+    //Averages the float values in a list
+    //Takes List<floatY values
+    //Returns float average
     private float Average(List<float> values)
     {
         float temp = 0;
